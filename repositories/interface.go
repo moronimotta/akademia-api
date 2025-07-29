@@ -16,6 +16,7 @@ type AkademiaRepository interface {
 	DeleteCourse(id string) error
 
 	CreateClass(class entities.Classes) error
+	CreateClasses(classes []entities.Classes) error
 	GetClassByID(id string) (*entities.Classes, error)
 	GetAllClasses() ([]entities.Classes, error)
 	GetAllClassesByCourseID(courseID string) ([]entities.Classes, error)

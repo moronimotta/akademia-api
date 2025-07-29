@@ -24,33 +24,33 @@ func NewPgPostsRepository(db db.Database) PgPosts {
 }
 func (r *pgPostsRepository) CreatePost(post entities.Posts) error {
 
-	if err := r.db.GetDB().Create(&post).Error; err != nil {
+	if err := r.db.GetSQLDB().Create(&post).Error; err != nil {
 		return err
 	}
 	return nil
 }
 func (r *pgPostsRepository) GetPostByID(id string) (*entities.Posts, error) {
 	post := &entities.Posts{}
-	if err := r.db.GetDB().Where("id = ?", id).First(post).Error; err != nil {
+	if err := r.db.GetSQLDB().Where("id = ?", id).First(post).Error; err != nil {
 		return nil, err
 	}
 	return post, nil
 }
 func (r *pgPostsRepository) GetAllPosts() ([]entities.Posts, error) {
 	posts := []entities.Posts{}
-	if err := r.db.GetDB().Find(&posts).Error; err != nil {
+	if err := r.db.GetSQLDB().Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
 }
 func (r *pgPostsRepository) UpdatePost(post *entities.Posts) error {
-	if err := r.db.GetDB().Model(&entities.Posts{}).Where("id = ?", post.ID).Updates(post).Error; err != nil {
+	if err := r.db.GetSQLDB().Model(&entities.Posts{}).Where("id = ?", post.ID).Updates(post).Error; err != nil {
 		return err
 	}
 	return nil
 }
 func (r *pgPostsRepository) DeletePost(id string) error {
-	if err := r.db.GetDB().Where("id = ?", id).Delete(&entities.Posts{}).Error; err != nil {
+	if err := r.db.GetSQLDB().Where("id = ?", id).Delete(&entities.Posts{}).Error; err != nil {
 		return err
 	}
 	return nil

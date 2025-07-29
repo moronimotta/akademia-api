@@ -7,14 +7,16 @@ import (
 	"akademia-api/db"
 
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 )
 
 type Server struct {
-	app       *gin.Engine
-	pgHandler *handlers.DbHttpHandler
+	app         *gin.Engine
+	pgHandler   *handlers.DbHttpHandler
+	redisClient *redis.Client
 }
 
-func NewServer(db db.Database) *Server {
+func NewServer(db db.Database, redisClient *redis.Client) *Server {
 	logs.InitLogging()
 
 	pgHandler, err := handlers.NewDbHttpHandler("postgres", db)
@@ -23,8 +25,9 @@ func NewServer(db db.Database) *Server {
 	}
 
 	return &Server{
-		app:       gin.Default(),
-		pgHandler: pgHandler,
+		app:         gin.Default(),
+		pgHandler:   pgHandler,
+		redisClient: redisClient,
 	}
 }
 func (s *Server) Start() {
@@ -32,6 +35,10 @@ func (s *Server) Start() {
 	s.initializeMiddlewares()
 
 	s.initializeAkademiaHttpHandler()
+
+	// s.app.POST("/content/upload-url", {
+
+	// })
 
 	if err := s.app.Run(":3536"); err != nil {
 		panic(err)

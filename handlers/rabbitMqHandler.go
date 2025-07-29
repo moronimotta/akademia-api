@@ -7,16 +7,18 @@ import (
 	"log"
 
 	messageWorker "github.com/moronimotta/message-worker-module"
+	"github.com/redis/go-redis/v9"
 )
 
 type RabbitMqHandler struct {
-	DbUsecase usecases.DbUsecase
+	DbUsecase   usecases.DbUsecase
+	RedisClient *redis.Client
 }
 
-func NewRabbitMqHandler(db db.Database) *RabbitMqHandler {
+func NewRabbitMqHandler(db db.Database, redisClient *redis.Client) *RabbitMqHandler {
 	var usecaseDb usecases.DbUsecase
 
-	switch db.GetDB().Dialector.Name() {
+	switch db.GetSQLDB().Dialector.Name() {
 	case "postgres":
 		usecaseDb = *usecases.NewPgUsecase(db)
 	default:
@@ -24,7 +26,8 @@ func NewRabbitMqHandler(db db.Database) *RabbitMqHandler {
 	}
 
 	return &RabbitMqHandler{
-		DbUsecase: usecaseDb,
+		DbUsecase:   usecaseDb,
+		RedisClient: redisClient,
 	}
 }
 
@@ -34,6 +37,10 @@ func (h *RabbitMqHandler) EventBus(event messageWorker.Event) error {
 	case "product_created":
 		// TODO: Creates a course
 		log.Println("Product created event received")
+	case "courses.getAll":
+		// TODO: Get all courses
+		// TODO: Return to a queue
+		log.Println("Get all courses event received")
 	default:
 		return errors.New("event not found")
 	}

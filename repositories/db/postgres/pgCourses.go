@@ -24,33 +24,33 @@ func NewPgCoursesRepository(db db.Database) PgCourses {
 }
 func (r *pgCoursesRepository) CreateCourse(course entities.Courses) error {
 
-	if err := r.db.GetDB().Create(&course).Error; err != nil {
+	if err := r.db.GetSQLDB().Create(&course).Error; err != nil {
 		return err
 	}
 	return nil
 }
 func (r *pgCoursesRepository) GetCourseByID(id string) (*entities.Courses, error) {
 	course := &entities.Courses{}
-	if err := r.db.GetDB().Where("id = ?", id).First(course).Error; err != nil {
+	if err := r.db.GetSQLDB().Where("id = ?", id).First(course).Error; err != nil {
 		return nil, err
 	}
 	return course, nil
 }
 func (r *pgCoursesRepository) GetAllCourses() ([]entities.Courses, error) {
 	posts := []entities.Courses{}
-	if err := r.db.GetDB().Find(&posts).Error; err != nil {
+	if err := r.db.GetSQLDB().Find(&posts).Error; err != nil {
 		return nil, err
 	}
 	return posts, nil
 }
 func (r *pgCoursesRepository) UpdateCourse(course *entities.Courses) error {
-	if err := r.db.GetDB().Model(&entities.Courses{}).Where("id = ?", course.ID).Updates(course).Error; err != nil {
+	if err := r.db.GetSQLDB().Model(&entities.Courses{}).Where("id = ?", course.ID).Updates(course).Error; err != nil {
 		return err
 	}
 	return nil
 }
 func (r *pgCoursesRepository) DeleteCourse(id string) error {
-	if err := r.db.GetDB().Where("id = ?", id).Delete(&entities.Courses{}).Error; err != nil {
+	if err := r.db.GetSQLDB().Where("id = ?", id).Delete(&entities.Courses{}).Error; err != nil {
 		return err
 	}
 	return nil

@@ -1,12 +1,14 @@
 package entities
 
+import "go.mongodb.org/mongo-driver/bson/primitive"
+
 type UserCoursesInfo struct {
-	ID        string       `json:"id" bson:"_id"`
-	UserID    string       `json:"user_id" bson:"user_id"`
-	Courses   []UserCourse `json:"courses" bson:"courses"` // List of courses the user is enrolled in
-	CreatedAt string       `json:"created_at" bson:"created_at"`
-	UpdatedAt string       `json:"updated_at" bson:"updated_at"`
-	DeletedAt string       `json:"deleted_at" bson:"deleted_at"`
+	ID        primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	UserID    string             `json:"user_id" bson:"user_id"`
+	Courses   []UserCourse       `json:"courses" bson:"courses"` // List of courses the user is enrolled in
+	CreatedAt string             `json:"created_at" bson:"created_at"`
+	UpdatedAt string             `json:"updated_at" bson:"updated_at"`
+	DeletedAt string             `json:"deleted_at" bson:"deleted_at"`
 }
 
 type UserCourse struct {

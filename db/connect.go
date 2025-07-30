@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"os"
+	"strings"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,46 +14,58 @@ import (
 )
 
 func Connect() (Database, error) {
+	// PostgreSQL
 	db, err := gorm.Open(postgres.Open(os.Getenv("DB_URL")), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
+		log.Fatalf("❌ Error connecting to PostgreSQL: %v", err)
 	}
 
+	// Rodar migrations se necessário
 	if err := db.AutoMigrate(
 	// &entities.Posts{},
 	// &entities.Content{},
 	// &entities.Classes{},
 	// &entities.Courses{},
 	); err != nil {
-		log.Fatalf("Error migrating database: %v", err)
+		log.Fatalf("❌ Error migrating PostgreSQL: %v", err)
 	}
 
-	// Modern MongoDB connection
-	ctx := context.Background()
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_URL")))
+	// MongoDB
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mongoURL := os.Getenv("MONGODB_URL")
+	mongoDBName := os.Getenv("MONGODB_NAME")
+
+	clientOpts := options.Client().ApplyURI(mongoURL)
+	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
-		log.Fatalf("Error creating MongoDB client: %v", err)
+		log.Fatalf("❌ Error creating MongoDB client: %v", err)
 	}
 
-	// Test the connection
 	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatalf("Error connecting to MongoDB: %v", err)
+		log.Fatalf("❌ Error pinging MongoDB: %v", err)
 	}
 
-	mongoDB := client.Database(os.Getenv("MONGODB_NAME"))
+	mongoDB := client.Database(mongoDBName)
 	if mongoDB == nil {
-		log.Fatalf("Error getting MongoDB database")
+		log.Fatalf("❌ Could not select MongoDB database '%s'", mongoDBName)
 	}
 
-	// Index creation moved to manual setup or migration script
-	// collection := mongoDB.Collection(os.Getenv("MONGODB_COLLECTION_NAME"))
-	// _, err = collection.Indexes().CreateOne(context.Background(), mongo.IndexModel{
-	// 	Keys:    bson.D{{Key: "user_id", Value: 1}},
-	// 	Options: options.Index().SetUnique(true),
-	// })
-	// if err != nil {
-	// 	log.Printf("Warning: Error creating index on MongoDB collection: %v", err)
-	// }
+	// check if the collection exists, if not, create it
+	collectionName := os.Getenv("MONGODB_COLLECTION_NAME")
+	if collectionName == "" {
+		log.Fatalf("❌ MONGODB_COLLECTION_NAME environment variable is not set")
+		if err := mongoDB.CreateCollection(ctx, collectionName); err != nil {
+			if !strings.Contains(err.Error(), "already exists") {
+				log.Fatalf("❌ Error creating MongoDB collection '%s': %v", collectionName, err)
+			}
+		}
+	}
+	log.Printf("✅ MongoDB collection '%s' is ready", collectionName)
+
+	log.Println("✅ MongoDB connected!")
+	log.Println("✅ PostgreSQL connected!")
 
 	return &databaseImpl{
 		sql:   db,

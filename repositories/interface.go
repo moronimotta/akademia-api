@@ -38,4 +38,5 @@ type UserProgressRepository interface {
 	AddCourseToUser(userID, courseID string, classes []entities.Classes) error
 	UpdateClassStatus(userID, courseID, classID string) error
 	DeleteUserCourseInfo(id string) error
+	GetAllUserCourses() ([]entities.UserCoursesInfo, error)
 }

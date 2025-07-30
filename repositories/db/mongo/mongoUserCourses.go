@@ -5,6 +5,8 @@ import (
 	"akademia-api/entities"
 	"context"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type UserCoursesRepository struct {
@@ -19,6 +21,7 @@ type UserCoursesInfo interface {
 	AddCourseToUser(userID, courseID string, classes []entities.Classes) error
 	UpdateClassStatus(userID, courseID, classID string) error
 	DeleteUserCourseInfo(id string) error
+	GetAllUserCourses() ([]entities.UserCoursesInfo, error)
 }
 
 func NewUserCoursesRepository(db db.Database) UserCoursesInfo {
@@ -27,14 +30,34 @@ func NewUserCoursesRepository(db db.Database) UserCoursesInfo {
 	}
 }
 
-func (r *UserCoursesRepository) CreateUserCourseInfo(userCourse entities.UserCoursesInfo) error {
+func (r *UserCoursesRepository) GetAllUserCourses() ([]entities.UserCoursesInfo, error) {
+	cursor, err := r.db.GetMongoDB().Collection("user_courses").Find(context.TODO(), map[string]interface{}{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
 
+	var userCourses []entities.UserCoursesInfo
+	if err := cursor.All(context.TODO(), &userCourses); err != nil {
+		return nil, err
+	}
+	return userCourses, nil
+}
+
+func (r *UserCoursesRepository) CreateUserCourseInfo(userCourse entities.UserCoursesInfo) error {
 	userCourse.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
 	userCourse.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 
-	if _, err := r.db.GetMongoDB().Collection("user_courses").InsertOne(context.TODO(), userCourse); err != nil {
+	// MongoDB will auto-generate ObjectID if ID is empty
+	if userCourse.ID == primitive.NilObjectID {
+		userCourse.ID = primitive.NewObjectID()
+	}
+
+	_, err := r.db.GetMongoDB().Collection("user_courses").InsertOne(context.TODO(), userCourse)
+	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -84,6 +107,7 @@ func (r *UserCoursesRepository) AddCourseToUser(userID, courseID string, classes
 			Finished: false,
 		}
 	}
+
 	filter := map[string]interface{}{"user_id": userID}
 	update := map[string]interface{}{
 		"$push": map[string]interface{}{
@@ -94,9 +118,25 @@ func (r *UserCoursesRepository) AddCourseToUser(userID, courseID string, classes
 		},
 	}
 
-	if _, err := r.db.GetMongoDB().Collection("user_courses").UpdateOne(context.TODO(), filter, update); err != nil {
+	result, err := r.db.GetMongoDB().Collection("user_courses").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
 		return err
 	}
+
+	// If no document was modified, it means the user doesn't exist, so create a new document
+	if result.ModifiedCount == 0 {
+		userCourse := entities.UserCoursesInfo{
+			UserID:    userID,
+			Courses:   []entities.UserCourse{course},
+			CreatedAt: time.Now().Format("2006-01-02 15:04:05"),
+			UpdatedAt: time.Now().Format("2006-01-02 15:04:05"),
+		}
+
+		if _, err := r.db.GetMongoDB().Collection("user_courses").InsertOne(context.TODO(), userCourse); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -135,15 +175,25 @@ func (r *UserCoursesRepository) UpdateClassStatus(userID, courseID, classID stri
 }
 
 func (r *UserCoursesRepository) DeleteUserCourseInfo(id string) error {
-	if _, err := r.db.GetMongoDB().Collection("user_courses").DeleteOne(context.TODO(), map[string]interface{}{"id": id}); err != nil {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+
+	if _, err := r.db.GetMongoDB().Collection("user_courses").DeleteOne(context.TODO(), map[string]interface{}{"_id": objectID}); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (r *UserCoursesRepository) GetUserCourseByID(id string) (*entities.UserCoursesInfo, error) {
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+
 	userCourse := &entities.UserCoursesInfo{}
-	if err := r.db.GetMongoDB().Collection("user_courses").FindOne(context.TODO(), map[string]interface{}{"id": id}).Decode(userCourse); err != nil {
+	if err := r.db.GetMongoDB().Collection("user_courses").FindOne(context.TODO(), map[string]interface{}{"_id": objectID}).Decode(userCourse); err != nil {
 		return nil, err
 	}
 	return userCourse, nil

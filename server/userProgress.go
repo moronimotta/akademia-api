@@ -8,6 +8,15 @@ import (
 
 func (s *Server) initUserProgressRoutes() {
 
+	s.app.GET("/user-progress", func(c *gin.Context) {
+		output, err := s.dbHandler.Repository.UserProgress.GetAllUserCourses()
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, output)
+	})
+
 	// GET USER COURSE INFO BY USER ID
 	s.app.GET("/user-progress/:userID", func(c *gin.Context) {
 		userID := c.Param("userID")

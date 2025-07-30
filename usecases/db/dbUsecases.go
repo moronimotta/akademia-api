@@ -3,6 +3,7 @@ package usecases
 import (
 	"akademia-api/db"
 	"akademia-api/repositories"
+	mongoRepository "akademia-api/repositories/db/mongo"
 	postgresRepository "akademia-api/repositories/db/postgres"
 )
 
@@ -10,11 +11,15 @@ type DbUsecase struct {
 	Repository repositories.AkademiaRepository
 }
 
-func NewPgUsecase(db db.Database) *DbUsecase {
+func NewDbUsecase(db db.Database) *DbUsecase {
 
-	repository := postgresRepository.NewPostgresRepository(db)
+	pgRepository := postgresRepository.NewPostgresRepository(db)
+	mongoRepository := mongoRepository.NewMongoRepository(db)
 
 	return &DbUsecase{
-		Repository: repository,
+		Repository: repositories.AkademiaRepository{
+			Content:      pgRepository,
+			UserProgress: mongoRepository,
+		},
 	}
 }

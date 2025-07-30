@@ -19,7 +19,7 @@ type Server struct {
 func NewServer(db db.Database, redisClient *redis.Client) *Server {
 	logs.InitLogging()
 
-	pgHandler, err := handlers.NewDbHttpHandler("postgres", db)
+	pgHandler, err := handlers.NewDbHttpHandler(db)
 	if err != nil {
 		return nil
 	}

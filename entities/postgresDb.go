@@ -19,6 +19,7 @@ type Courses struct {
 
 type Classes struct {
 	ID          string  `json:"id"`
+	Order       int     `json:"order"`     // Order of the class in the course
 	CourseID    string  `json:"course_id"` // ID of the course this class belongs tox
 	Name        string  `json:"name"`
 	Description string  `json:"description"`

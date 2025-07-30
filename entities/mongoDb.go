@@ -1,6 +1,6 @@
 package entities
 
-type UserCourses struct {
+type UserCoursesInfo struct {
 	ID        string       `json:"id" bson:"_id"`
 	UserID    string       `json:"user_id" bson:"user_id"`
 	Courses   []UserCourse `json:"courses" bson:"courses"` // List of courses the user is enrolled in
@@ -10,13 +10,13 @@ type UserCourses struct {
 }
 
 type UserCourse struct {
-	CourseID         string  `json:"course_id" bson:"course_id"`
-	TotalClasses     int     `json:"total_classes" bson:"total_classes"`
-	CompletedClasses int     `json:"completed_classes" bson:"completed_classes"`
-	Progress         float64 `json:"progress" bson:"progress"`
-	CreatedAt        string  `json:"created_at" bson:"created_at"`
-	UpdatedAt        string  `json:"updated_at" bson:"updated_at"`
-	DeletedAt        string  `json:"deleted_at" bson:"deleted_at"`
+	CourseID         string              `json:"course_id" bson:"course_id"`
+	Classes          []UserCourseClasses `json:"classes" bson:"classes"` // List of classes in the course
+	TotalClasses     int                 `json:"total_classes" bson:"total_classes"`
+	CompletedClasses int                 `json:"completed_classes" bson:"completed_classes"`
+	CreatedAt        string              `json:"created_at" bson:"created_at"`
+	UpdatedAt        string              `json:"updated_at" bson:"updated_at"`
+	DeletedAt        string              `json:"deleted_at" bson:"deleted_at"`
 }
 
 type UserCourseClasses struct {

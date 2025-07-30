@@ -11,8 +11,8 @@ type PostgresRepository struct {
 	PgCourses
 }
 
-func NewPostgresRepository(db db.Database) repositories.AkademiaRepository {
-	return PostgresRepository{
+func NewPostgresRepository(db db.Database) repositories.ContentRepository {
+	return &PostgresRepository{
 		PgPosts:   NewPgPostsRepository(db),
 		PgClasses: NewPgClassesRepository(db),
 		PgCourses: NewPgCoursesRepository(db),

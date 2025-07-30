@@ -20,7 +20,7 @@ func NewRabbitMqHandler(db db.Database, redisClient *redis.Client) *RabbitMqHand
 
 	switch db.GetSQLDB().Dialector.Name() {
 	case "postgres":
-		usecaseDb = *usecases.NewPgUsecase(db)
+		usecaseDb = *usecases.NewDbUsecase(db)
 	default:
 		usecaseDb = usecases.DbUsecase{}
 	}

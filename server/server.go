@@ -12,21 +12,21 @@ import (
 
 type Server struct {
 	app         *gin.Engine
-	pgHandler   *handlers.DbHttpHandler
+	dbHandler   *handlers.DbHttpHandler
 	redisClient *redis.Client
 }
 
 func NewServer(db db.Database, redisClient *redis.Client) *Server {
 	logs.InitLogging()
 
-	pgHandler, err := handlers.NewDbHttpHandler(db)
+	dbHandler, err := handlers.NewDbHttpHandler(db)
 	if err != nil {
 		return nil
 	}
 
 	return &Server{
 		app:         gin.Default(),
-		pgHandler:   pgHandler,
+		dbHandler:   dbHandler,
 		redisClient: redisClient,
 	}
 }
@@ -48,5 +48,7 @@ func (s *Server) Start() {
 func (s *Server) initializeAkademiaHttpHandler() {
 
 	s.initPostRoutes()
-
+	s.initUserProgressRoutes()
+	s.initCoursesRoutes()
+	s.initClassesRoutes()
 }

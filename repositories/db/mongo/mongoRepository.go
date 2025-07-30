@@ -6,9 +6,6 @@ import (
 )
 
 type MongoRepository struct {
-	// PgPosts
-	// PgClasses
-	// PgCourses
 	UserCoursesInfo
 }
 

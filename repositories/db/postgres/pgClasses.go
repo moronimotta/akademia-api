@@ -13,6 +13,7 @@ type PgClasses interface {
 	GetAllClassesByCourseID(courseID string) ([]entities.Classes, error)
 	UpdateClass(class *entities.Classes) error
 	DeleteClass(id string) error
+	DeleteClassesByCourseID(courseID string) error
 }
 
 type pgClassesRepository struct {
@@ -67,6 +68,13 @@ func (r *pgClassesRepository) UpdateClass(class *entities.Classes) error {
 }
 func (r *pgClassesRepository) DeleteClass(id string) error {
 	if err := r.db.GetSQLDB().Where("id = ?", id).Delete(&entities.Classes{}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *pgClassesRepository) DeleteClassesByCourseID(courseID string) error {
+	if err := r.db.GetSQLDB().Where("course_id = ?", courseID).Delete(&entities.Classes{}).Error; err != nil {
 		return err
 	}
 	return nil

@@ -12,13 +12,12 @@ type UserCoursesRepository struct {
 }
 
 type UserCoursesInfo interface {
-	// crud operations for user courses
 	CreateUserCourseInfo(userCourse entities.UserCoursesInfo) error
 	GetUserCourseByID(id string) (*entities.UserCoursesInfo, error)
 	GetUserCourseInfoByUserID(userID string) (*entities.UserCoursesInfo, error)
-	UpdateUserCourseProgress(userID, courseID string, completedClasses int) error
-	AddCourseToUser(userID string, course entities.UserCourse, classes []string) error
-	UpdateClassStatus(userID, courseID, classID string, finished bool) error
+	UpdateUserCourseProgress(userID, courseID string) error
+	AddCourseToUser(userID, courseID string, classes []entities.Classes) error
+	UpdateClassStatus(userID, courseID, classID string) error
 	DeleteUserCourseInfo(id string) error
 }
 
@@ -47,17 +46,19 @@ func (r *UserCoursesRepository) GetUserCourseInfoByUserID(userID string) (*entit
 	return userCourse, nil
 }
 
-func (r *UserCoursesRepository) UpdateUserCourseProgress(userID, courseID string, completedClasses int) error {
+func (r *UserCoursesRepository) UpdateUserCourseProgress(userID, courseID string) error {
 	filter := map[string]interface{}{
 		"user_id":           userID,
 		"courses.course_id": courseID,
 	}
 
 	update := map[string]interface{}{
+		"$inc": map[string]interface{}{
+			"courses.$.completed_classes": 1,
+		},
 		"$set": map[string]interface{}{
-			"courses.$.completed_classes": completedClasses,
-			"courses.$.updated_at":        time.Now().Format("2006-01-02 15:04:05"),
-			"updated_at":                  time.Now().Format("2006-01-02 15:04:05"),
+			"courses.$.updated_at": time.Now().Format("2006-01-02 15:04:05"),
+			"updated_at":           time.Now().Format("2006-01-02 15:04:05"),
 		},
 	}
 
@@ -67,42 +68,39 @@ func (r *UserCoursesRepository) UpdateUserCourseProgress(userID, courseID string
 	return nil
 }
 
-// When user buys a new course, it adds the course to the user's courses array
-// TODO: Maybe send a request to postgres to get all the classes with the course id.
-// classes {[class_id: "class_id", finished: false}, ...}]}
-// Fill the classes with ids and finished status as false
-// Get the len of []classes and create object UserCourseClasses based on that with ClassID and Finished as false by default
-func (r *UserCoursesRepository) AddCourseToUser(userID string, course entities.UserCourse, classes []string) error {
-	course.CreatedAt = time.Now().Format("2006-01-02 15:04:05")
-	course.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
-	course.DeletedAt = ""
-	course.TotalClasses = len(classes)
-	course.CompletedClasses = 0
+func (r *UserCoursesRepository) AddCourseToUser(userID, courseID string, classes []entities.Classes) error {
+	course := entities.UserCourse{
+		CourseID:         courseID,
+		CreatedAt:        time.Now().Format("2006-01-02 15:04:05"),
+		UpdatedAt:        time.Now().Format("2006-01-02 15:04:05"),
+		DeletedAt:        "",
+		TotalClasses:     len(classes),
+		CompletedClasses: 0,
+	}
 	course.Classes = make([]entities.UserCourseClasses, len(classes))
-	for i, classID := range classes {
+	for i, class := range classes {
 		course.Classes[i] = entities.UserCourseClasses{
-			ClassID:  classID,
+			ClassID:  class.ID,
 			Finished: false,
 		}
 	}
 	filter := map[string]interface{}{"user_id": userID}
 	update := map[string]interface{}{
-		"$addToSet": map[string]interface{}{
+		"$push": map[string]interface{}{
 			"courses": course,
 		},
 		"$set": map[string]interface{}{
 			"updated_at": time.Now().Format("2006-01-02 15:04:05"),
 		},
 	}
+
 	if _, err := r.db.GetMongoDB().Collection("user_courses").UpdateOne(context.TODO(), filter, update); err != nil {
 		return err
 	}
 	return nil
 }
 
-// Update the status of a specific class in a course
-// This function updates a class status using a simpler approach
-func (r *UserCoursesRepository) UpdateClassStatus(userID, courseID, classID string, finished bool) error {
+func (r *UserCoursesRepository) UpdateClassStatus(userID, courseID, classID string) error {
 	// First, get the user's course info
 	userCourseInfo, err := r.GetUserCourseInfoByUserID(userID)
 	if err != nil {
@@ -114,7 +112,7 @@ func (r *UserCoursesRepository) UpdateClassStatus(userID, courseID, classID stri
 		if course.CourseID == courseID {
 			for j, class := range course.Classes {
 				if class.ClassID == classID {
-					userCourseInfo.Courses[i].Classes[j].Finished = finished
+					userCourseInfo.Courses[i].Classes[j].Finished = true
 					userCourseInfo.Courses[i].UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 					userCourseInfo.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 					break

@@ -42,27 +42,15 @@ func (s *Server) initUserProgressRoutes() {
 		c.JSON(201, gin.H{"message": "User progress created successfully"})
 	})
 
-	// UPDATE USER COURSE PROGRESS
-	s.app.PUT("/user-progress/course-progress/:userID/:courseID", func(c *gin.Context) {
-		userID := c.Param("userID")
-		courseID := c.Param("courseID")
-		if err := s.dbHandler.Repository.UserProgress.UpdateUserCourseProgress(userID, courseID); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
-		}
-		c.JSON(200, gin.H{"message": "User course progress updated successfully"})
-	})
-
-	// UPDATE CLASS STATUS
-	s.app.PUT("/user-progress/class-status/:userID/:courseID/:classID", func(c *gin.Context) {
+	s.app.PUT("/user-progress/completed-class/:userID/:courseID/:classID", func(c *gin.Context) {
 		userID := c.Param("userID")
 		courseID := c.Param("courseID")
 		classID := c.Param("classID")
-		if err := s.dbHandler.Repository.UserProgress.UpdateClassStatus(userID, courseID, classID); err != nil {
+		if err := s.dbHandler.MarkClassAsCompleted(userID, courseID, classID); err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(200, gin.H{"message": "Class status updated successfully"})
+		c.JSON(200, gin.H{"message": "Class marked as completed successfully"})
 	})
 
 	// DELETE USER COURSE INFO

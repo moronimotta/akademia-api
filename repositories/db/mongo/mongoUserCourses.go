@@ -4,6 +4,7 @@ import (
 	"akademia-api/db"
 	"akademia-api/entities"
 	"context"
+	"errors"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -152,6 +153,9 @@ func (r *UserCoursesRepository) UpdateClassStatus(userID, courseID, classID stri
 		if course.CourseID == courseID {
 			for j, class := range course.Classes {
 				if class.ClassID == classID {
+					if class.Finished {
+						return errors.New("Class already marked as finished") // Class already marked as finished
+					}
 					userCourseInfo.Courses[i].Classes[j].Finished = true
 					userCourseInfo.Courses[i].UpdatedAt = time.Now().Format("2006-01-02 15:04:05")
 					userCourseInfo.UpdatedAt = time.Now().Format("2006-01-02 15:04:05")

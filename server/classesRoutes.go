@@ -2,6 +2,7 @@ package server
 
 import (
 	"akademia-api/entities"
+	"encoding/json"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,16 +32,34 @@ func (s *Server) initClassesRoutes() {
 	})
 
 	s.app.POST("/classes", func(c *gin.Context) {
-		var class entities.Classes
-		if err := c.ShouldBindJSON(&class); err != nil {
-			c.JSON(400, gin.H{"error": "Invalid input"})
+		rawData, err := c.GetRawData()
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Could not read request body"})
 			return
 		}
-		if err := s.dbHandler.Repository.Content.CreateClass(class); err != nil {
-			c.JSON(500, gin.H{"error": err.Error()})
-			return
+
+		var classes []entities.Classes
+
+		if err := json.Unmarshal(rawData, &classes); err != nil {
+			var single entities.Classes
+			if err := json.Unmarshal(rawData, &single); err != nil {
+				c.JSON(400, gin.H{"error": "Invalid input"})
+				return
+			}
+
+			if err := s.dbHandler.Repository.Content.CreateClass(single); err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
 		}
-		c.JSON(201, gin.H{"message": "Class created successfully"})
+		if len(classes) > 0 {
+			if err := s.dbHandler.Repository.Content.CreateClasses(classes); err != nil {
+				c.JSON(500, gin.H{"error": err.Error()})
+				return
+			}
+		}
+
+		c.JSON(201, gin.H{"message": "Class(es) created successfully"})
 	})
 
 	s.app.PUT("/classes/:id", func(c *gin.Context) {

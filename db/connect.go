@@ -1,6 +1,7 @@
 package db
 
 import (
+	"akademia-api/entities"
 	"context"
 	"log"
 	"os"
@@ -22,10 +23,10 @@ func Connect() (Database, error) {
 
 	// Rodar migrations se necessário
 	if err := db.AutoMigrate(
-	// &entities.Posts{},
-	// &entities.Content{},
-	// &entities.Classes{},
-	// &entities.Courses{},
+		&entities.Posts{},
+		// &entities.Content{},
+		&entities.Classes{},
+		&entities.Courses{},
 	); err != nil {
 		log.Fatalf("❌ Error migrating PostgreSQL: %v", err)
 	}

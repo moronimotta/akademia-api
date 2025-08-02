@@ -72,4 +72,14 @@ func (s *Server) initCoursesRoutes() {
 		}
 		c.JSON(200, gin.H{"message": "Course deleted successfully"})
 	})
+	s.app.GET("/courses/:id/classes", func(c *gin.Context) {
+		courseID := c.Param("id") // Changed from "courseID" to "id"
+		classes, err := s.dbHandler.Repository.Content.GetAllClassesByCourseID(courseID)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, classes)
+	})
+
 }

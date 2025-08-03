@@ -14,7 +14,7 @@ type ContentRepository interface {
 	UpdatePost(post *entities.Posts) error
 	DeletePost(id string) error
 
-	CreateCourse(course entities.Courses) error
+	CreateCourse(course *entities.Courses) error
 	GetCourseByID(id string) (*entities.Courses, error)
 	GetAllCourses() ([]entities.Courses, error)
 	UpdateCourse(course *entities.Courses) error

@@ -22,9 +22,9 @@ type CourseInput struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name" binding:"required"`
 	Description string    `json:"description"`
-	Status      string    `json:"status" binding:"required"` // e.g. "active", "draft", "archived"
-	ProductID   string    `json:"product_id"`                //TODO: Later will be required.
-	Classes     []Classes `json:"classes"`                   // List of classes in the course
+	Status      string    `json:"status"`     // e.g. "active", "draft", "archived"
+	ProductID   string    `json:"product_id"` //TODO: Later will be required.
+	Classes     []Classes `json:"classes"`    // List of classes in the course
 }
 
 type CoursesClassesOutput struct {

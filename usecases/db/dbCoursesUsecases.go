@@ -58,8 +58,11 @@ func (d *DbUsecase) CreateFullCourse(course entities.CourseInput) error {
 	courseInput.Name = course.Name
 	courseInput.Description = course.Description
 	courseInput.Status = course.Status
+	if courseInput.Status == "" {
+		courseInput.Status = "draft"
+	}
 
-	if err := d.Repository.Content.CreateCourse(courseInput); err != nil {
+	if err := d.Repository.Content.CreateCourse(&courseInput); err != nil {
 		return err
 	}
 	if len(course.Classes) > 0 {

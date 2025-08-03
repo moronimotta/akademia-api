@@ -6,7 +6,7 @@ import (
 )
 
 type PgCourses interface {
-	CreateCourse(course entities.Courses) error
+	CreateCourse(course *entities.Courses) error
 	GetCourseByID(id string) (*entities.Courses, error)
 	GetAllCourses() ([]entities.Courses, error)
 	UpdateCourse(course *entities.Courses) error
@@ -23,9 +23,9 @@ func NewPgCoursesRepository(db db.Database) PgCourses {
 		db: db,
 	}
 }
-func (r *pgCoursesRepository) CreateCourse(course entities.Courses) error {
+func (r *pgCoursesRepository) CreateCourse(course *entities.Courses) error {
 
-	if err := r.db.GetSQLDB().Create(&course).Error; err != nil {
+	if err := r.db.GetSQLDB().Create(course).Error; err != nil {
 		return err
 	}
 	return nil

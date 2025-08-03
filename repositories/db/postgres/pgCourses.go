@@ -11,6 +11,7 @@ type PgCourses interface {
 	GetAllCourses() ([]entities.Courses, error)
 	UpdateCourse(course *entities.Courses) error
 	DeleteCourse(id string) error
+	GetDraftCourses() ([]entities.Courses, error)
 }
 
 type pgCoursesRepository struct {
@@ -54,4 +55,12 @@ func (r *pgCoursesRepository) DeleteCourse(id string) error {
 		return err
 	}
 	return nil
+}
+
+func (r *pgCoursesRepository) GetDraftCourses() ([]entities.Courses, error) {
+	var drafts []entities.Courses
+	if err := r.db.GetSQLDB().Where("status = ?", "draft").Find(&drafts).Error; err != nil {
+		return nil, err
+	}
+	return drafts, nil
 }

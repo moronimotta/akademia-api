@@ -18,6 +18,11 @@ type Courses struct {
 	DeletedAt   string `json:"deleted_at" gorm:"column:deleted_at"`
 }
 
+type CoursesClassesOutput struct {
+	Courses []Courses `json:"courses"`
+	Classes []Classes `json:"classes"`
+}
+
 type Classes struct {
 	ID          string `json:"id"`
 	Order       int    `json:"order"`     // Order of the class in the course

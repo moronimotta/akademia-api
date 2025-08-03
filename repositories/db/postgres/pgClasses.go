@@ -14,6 +14,7 @@ type PgClasses interface {
 	UpdateClass(class *entities.Classes) error
 	DeleteClass(id string) error
 	DeleteClassesByCourseID(courseID string) error
+	GetClassesByCoursesID(ids []string) ([]entities.Classes, error)
 }
 
 type pgClassesRepository struct {
@@ -60,6 +61,15 @@ func (r *pgClassesRepository) GetAllClassesByCourseID(courseID string) ([]entiti
 	}
 	return posts, nil
 }
+
+func (r *pgClassesRepository) GetClassesByCoursesID(ids []string) ([]entities.Classes, error) {
+	var classes []entities.Classes
+	if err := r.db.GetSQLDB().Where("course_id IN ?", ids).Find(&classes).Error; err != nil {
+		return nil, err
+	}
+	return classes, nil
+}
+
 func (r *pgClassesRepository) UpdateClass(class *entities.Classes) error {
 	if err := r.db.GetSQLDB().Model(&entities.Classes{}).Where("id = ?", class.ID).Updates(class).Error; err != nil {
 		return err

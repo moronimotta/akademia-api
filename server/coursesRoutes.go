@@ -30,6 +30,15 @@ func (s *Server) initCoursesRoutes() {
 		c.JSON(200, course)
 	})
 
+	s.app.GET("/courses/drafts", func(c *gin.Context) {
+		drafts, err := s.dbHandler.GetAllDrafts()
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, drafts)
+	})
+
 	s.app.POST("/courses", func(c *gin.Context) {
 		var course entities.Courses
 		if err := c.ShouldBindJSON(&course); err != nil {

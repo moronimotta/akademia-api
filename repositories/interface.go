@@ -19,6 +19,7 @@ type ContentRepository interface {
 	GetAllCourses() ([]entities.Courses, error)
 	UpdateCourse(course *entities.Courses) error
 	DeleteCourse(id string) error
+	GetDraftCourses() ([]entities.Courses, error)
 
 	CreateClass(class entities.Classes) error
 	CreateClasses(classes []entities.Classes) error
@@ -28,6 +29,7 @@ type ContentRepository interface {
 	UpdateClass(class *entities.Classes) error
 	DeleteClass(id string) error
 	DeleteClassesByCourseID(courseID string) error
+	GetClassesByCoursesID(ids []string) ([]entities.Classes, error)
 }
 
 type UserProgressRepository interface {

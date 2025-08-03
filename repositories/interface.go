@@ -27,6 +27,7 @@ type ContentRepository interface {
 	GetAllClasses() ([]entities.Classes, error)
 	GetAllClassesByCourseID(courseID string) ([]entities.Classes, error)
 	UpdateClass(class *entities.Classes) error
+	UpdateClasses(classes []entities.Classes) error
 	DeleteClass(id string) error
 	DeleteClassesByCourseID(courseID string) error
 	GetClassesByCoursesID(ids []string) ([]entities.Classes, error)

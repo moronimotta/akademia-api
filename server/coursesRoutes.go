@@ -40,27 +40,28 @@ func (s *Server) initCoursesRoutes() {
 	})
 
 	s.app.POST("/courses", func(c *gin.Context) {
-		var course entities.Courses
-		if err := c.ShouldBindJSON(&course); err != nil {
+		var input entities.CourseInput
+		if err := c.ShouldBindJSON(&input); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid input"})
 			return
 		}
-		if err := s.dbHandler.Repository.Content.CreateCourse(course); err != nil {
+
+		if err := s.dbHandler.CreateFullCourse(input); err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
+
 		c.JSON(201, gin.H{"message": "Course created successfully"})
 	})
 
-	s.app.PUT("/courses/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		var course entities.Courses
+	s.app.PUT("/courses", func(c *gin.Context) {
+		var course entities.CourseInput
 		if err := c.ShouldBindJSON(&course); err != nil {
 			c.JSON(400, gin.H{"error": "Invalid input"})
 			return
 		}
-		course.ID = id // Ensure the ID is set for the update
-		if err := s.dbHandler.Repository.Content.UpdateCourse(&course); err != nil {
+
+		if err := s.dbHandler.UpdateCourse(&course); err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
@@ -89,6 +90,20 @@ func (s *Server) initCoursesRoutes() {
 			return
 		}
 		c.JSON(200, classes)
+	})
+
+	s.app.GET("/courses/:id/full-info", func(c *gin.Context) {
+		courseID := c.Param("id")
+		output, err := s.dbHandler.GetFullCourseInfo(courseID)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		if output == nil {
+			c.JSON(404, gin.H{"error": "Course not found"})
+			return
+		}
+		c.JSON(200, output)
 	})
 
 }

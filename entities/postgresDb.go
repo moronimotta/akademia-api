@@ -18,8 +18,22 @@ type Courses struct {
 	DeletedAt   string `json:"deleted_at" gorm:"column:deleted_at"`
 }
 
+type CourseInput struct {
+	ID          string    `json:"id"`
+	Name        string    `json:"name" binding:"required"`
+	Description string    `json:"description"`
+	Status      string    `json:"status" binding:"required"` // e.g. "active", "draft", "archived"
+	ProductID   string    `json:"product_id"`                //TODO: Later will be required.
+	Classes     []Classes `json:"classes"`                   // List of classes in the course
+}
+
 type CoursesClassesOutput struct {
 	Courses []Courses `json:"courses"`
+	Classes []Classes `json:"classes"`
+}
+
+type CourseClassesOutput struct {
+	Course  Courses   `json:"course"`
 	Classes []Classes `json:"classes"`
 }
 

@@ -12,6 +12,7 @@ type PgClasses interface {
 	GetAllClasses() ([]entities.Classes, error)
 	GetAllClassesByCourseID(courseID string) ([]entities.Classes, error)
 	UpdateClass(class *entities.Classes) error
+	UpdateClasses(classes []entities.Classes) error
 	DeleteClass(id string) error
 	DeleteClassesByCourseID(courseID string) error
 	GetClassesByCoursesID(ids []string) ([]entities.Classes, error)
@@ -76,6 +77,16 @@ func (r *pgClassesRepository) UpdateClass(class *entities.Classes) error {
 	}
 	return nil
 }
+
+func (r *pgClassesRepository) UpdateClasses(classes []entities.Classes) error {
+	for _, class := range classes {
+		if err := r.UpdateClass(&class); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (r *pgClassesRepository) DeleteClass(id string) error {
 	if err := r.db.GetSQLDB().Where("id = ?", id).Delete(&entities.Classes{}).Error; err != nil {
 		return err

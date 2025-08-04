@@ -106,4 +106,13 @@ func (s *Server) initCoursesRoutes() {
 		c.JSON(200, output)
 	})
 
+	s.app.GET("/courses/all/full-info", func(c *gin.Context) {
+		output, err := s.dbHandler.GetAllFullCoursesInfo()
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, output)
+	})
+
 }

@@ -58,6 +58,7 @@ func (d *DbUsecase) CreateFullCourse(course entities.CourseInput) error {
 	courseInput.Name = course.Name
 	courseInput.Description = course.Description
 	courseInput.Status = course.Status
+	courseInput.ProductID = course.ProductID
 	if courseInput.Status == "" {
 		courseInput.Status = "draft"
 	}
@@ -92,4 +93,40 @@ func (d *DbUsecase) GetFullCourseInfo(courseID string) (*entities.CourseClassesO
 		Course:  *course,
 		Classes: classes,
 	}, nil
+}
+
+func (d *DbUsecase) GetAllFullCoursesInfo() ([]entities.CourseClassesOutput, error) {
+	courses, err := d.Repository.Content.GetAllCourses()
+	if err != nil {
+		return nil, err
+	}
+
+	var output []entities.CourseClassesOutput
+
+	classes, err := d.Repository.Content.GetAllClasses()
+	if err != nil {
+		return nil, err
+	}
+
+	// Filter classes for each course
+	for _, course := range courses {
+		var courseClasses []entities.Classes
+
+		for _, class := range classes {
+			if class.CourseID == course.ID {
+				courseClasses = append(courseClasses, class)
+			}
+		}
+
+		output = append(output, entities.CourseClassesOutput{
+			Course:  course,
+			Classes: courseClasses,
+		})
+	}
+
+	if len(output) == 0 {
+		return nil, errors.New("no courses found")
+	}
+
+	return output, nil
 }

@@ -54,6 +54,10 @@ func (r *UserCoursesRepository) CreateUserCourseInfo(userCourse entities.UserCou
 		userCourse.ID = primitive.NewObjectID()
 	}
 
+	if userCourse.Courses == nil {
+		userCourse.Courses = make([]entities.UserCourse, 0)
+	}
+
 	_, err := r.db.GetMongoDB().Collection("user_courses").InsertOne(context.TODO(), userCourse)
 	if err != nil {
 		return err

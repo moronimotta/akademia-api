@@ -16,6 +16,16 @@ func (s *Server) initCoursesRoutes() {
 		c.JSON(200, output)
 	})
 
+	s.app.GET("/courses/product/:productID", func(c *gin.Context) {
+		productID := c.Param("productID")
+		course, err := s.dbHandler.Repository.Content.GetCourseByProductID(productID)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, course)
+	})
+
 	s.app.GET("/courses/:id", func(c *gin.Context) {
 		id := c.Param("id")
 		course, err := s.dbHandler.Repository.Content.GetCourseByID(id)

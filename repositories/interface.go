@@ -19,6 +19,7 @@ type ContentRepository interface {
 	GetAllCourses() ([]entities.Courses, error)
 	UpdateCourse(course *entities.Courses) error
 	DeleteCourse(id string) error
+	GetCourseByProductID(productID string) (*entities.Courses, error)
 	GetDraftCourses() ([]entities.Courses, error)
 
 	CreateClass(class entities.Classes) error

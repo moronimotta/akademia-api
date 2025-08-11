@@ -23,3 +23,18 @@ func NewDbUsecase(db db.Database) *DbUsecase {
 		},
 	}
 }
+
+func (u *DbUsecase) AddCoursesToUser(userID string, coursesID []string) error {
+	for _, courseID := range coursesID {
+		allClasses, err := u.Repository.Content.GetAllClassesByCourseID(courseID)
+		if err != nil {
+			return err
+		}
+
+		if err := u.Repository.UserProgress.AddCourseToUser(userID, courseID, allClasses); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

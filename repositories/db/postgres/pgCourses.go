@@ -8,6 +8,7 @@ import (
 type PgCourses interface {
 	CreateCourse(course *entities.Courses) error
 	GetCourseByID(id string) (*entities.Courses, error)
+	GetCourseByProductID(productID string) (*entities.Courses, error)
 	GetAllCourses() ([]entities.Courses, error)
 	UpdateCourse(course *entities.Courses) error
 	DeleteCourse(id string) error
@@ -63,4 +64,12 @@ func (r *pgCoursesRepository) GetDraftCourses() ([]entities.Courses, error) {
 		return nil, err
 	}
 	return drafts, nil
+}
+
+func (r *pgCoursesRepository) GetCourseByProductID(productID string) (*entities.Courses, error) {
+	course := &entities.Courses{}
+	if err := r.db.GetSQLDB().Where("product_id = ?", productID).First(course).Error; err != nil {
+		return nil, err
+	}
+	return course, nil
 }

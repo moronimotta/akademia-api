@@ -4,7 +4,7 @@ import (
 	"akademia-api/confs"
 	"akademia-api/db"
 	"akademia-api/server"
-	"log"
+	"log/slog"
 	"time"
 )
 
@@ -12,12 +12,12 @@ func main() {
 
 	err := confs.LoadConfig()
 	if err != nil {
-		log.Fatalf("Error loading configuration: %v", err)
+		slog.Error("Error loading configuration: %v", err)
 	}
 	// Initialize the database connection
 	db, err := db.Connect()
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
+		slog.Error("Error connecting to database: %v", err)
 	}
 
 	// initialize Redis
@@ -28,11 +28,11 @@ func main() {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
-				log.Printf("Recovered from panic: %v", r)
+				slog.Error("Recovered from panic: %v", r)
 			}
 		}()
 		time.Sleep(5 * time.Second)
-		log.Println("Starting RabbitMQ server...")
+		slog.Info("Starting RabbitMQ server...")
 		rabbitServer := server.NewRabbitMQServer(db, redisClient)
 		rabbitServer.Start()
 	}()

@@ -1,7 +1,7 @@
 package confs
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/joho/godotenv"
 )
@@ -9,7 +9,7 @@ import (
 func LoadConfig() error {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		slog.Error("Error loading .env file")
 	}
 
 	return nil

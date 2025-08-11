@@ -3,6 +3,7 @@ package server
 import (
 	"akademia-api/handlers"
 	logs "akademia-api/utils/logs"
+	"log/slog"
 
 	"akademia-api/db"
 
@@ -41,6 +42,7 @@ func (s *Server) Start() {
 	// })
 
 	if err := s.app.Run(":3536"); err != nil {
+		slog.Error("Failed to start server: %v", err)
 		panic(err)
 	}
 }

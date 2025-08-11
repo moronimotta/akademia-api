@@ -3,7 +3,8 @@ package db
 import (
 	"akademia-api/entities"
 	"context"
-	"log"
+	"errors"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -18,7 +19,7 @@ func Connect() (Database, error) {
 	// PostgreSQL
 	db, err := gorm.Open(postgres.Open(os.Getenv("DB_URL")), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("❌ Error connecting to PostgreSQL: %v", err)
+		return nil, err
 	}
 
 	// Rodar migrations se necessário
@@ -28,7 +29,7 @@ func Connect() (Database, error) {
 		&entities.Classes{},
 		&entities.Courses{},
 	); err != nil {
-		log.Fatalf("❌ Error migrating PostgreSQL: %v", err)
+		return nil, err
 	}
 
 	// MongoDB
@@ -41,32 +42,32 @@ func Connect() (Database, error) {
 	clientOpts := options.Client().ApplyURI(mongoURL)
 	client, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {
-		log.Fatalf("❌ Error creating MongoDB client: %v", err)
+		return nil, err
 	}
 
 	if err := client.Ping(ctx, nil); err != nil {
-		log.Fatalf("❌ Error pinging MongoDB: %v", err)
+		return nil, err
 	}
 
 	mongoDB := client.Database(mongoDBName)
 	if mongoDB == nil {
-		log.Fatalf("❌ Could not select MongoDB database '%s'", mongoDBName)
+		return nil, errors.New("could not select MongoDB database")
 	}
 
 	// check if the collection exists, if not, create it
 	collectionName := os.Getenv("MONGODB_COLLECTION_NAME")
 	if collectionName == "" {
-		log.Fatalf("❌ MONGODB_COLLECTION_NAME environment variable is not set")
-		if err := mongoDB.CreateCollection(ctx, collectionName); err != nil {
-			if !strings.Contains(err.Error(), "already exists") {
-				log.Fatalf("❌ Error creating MongoDB collection '%s': %v", collectionName, err)
-			}
+		return nil, errors.New("MONGODB_COLLECTION_NAME environment variable is not set")
+	}
+	if err := mongoDB.CreateCollection(ctx, collectionName); err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			return nil, err
 		}
 	}
-	log.Printf("✅ MongoDB collection '%s' is ready", collectionName)
 
-	log.Println("✅ MongoDB connected!")
-	log.Println("✅ PostgreSQL connected!")
+	slog.Info("MongoDB collection '%s' is ready", collectionName)
+	slog.Info("MongoDB connected!")
+	slog.Info("PostgreSQL connected!")
 
 	return &databaseImpl{
 		sql:   db,

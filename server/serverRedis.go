@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"log/slog"
 	"os"
 
 	"akademia-api/db"
@@ -35,6 +36,7 @@ func NewRedisServer(db db.Database) *RedisServer {
 func (s *RedisServer) Start() *redis.Client {
 	opt, err := redis.ParseURL(s.connectionUrl)
 	if err != nil {
+		slog.Error("Failed to parse Redis URL")
 		panic(err)
 	}
 
@@ -44,6 +46,7 @@ func (s *RedisServer) Start() *redis.Client {
 	ctx := context.Background()
 	_, err = rdb.Ping(ctx).Result()
 	if err != nil {
+		slog.Error("Failed to connect to Redis: %v", err)
 		panic("Failed to connect to Redis: " + err.Error())
 	}
 
@@ -51,9 +54,9 @@ func (s *RedisServer) Start() *redis.Client {
 	return rdb
 }
 
-// Close gracefully closes the Redis connection
 func (s *RedisServer) Close() error {
 	if s.Client != nil {
+		slog.Info("Closing Redis connection")
 		return s.Client.Close()
 	}
 	return nil
